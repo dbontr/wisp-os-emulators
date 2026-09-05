@@ -4,11 +4,13 @@ import { resolve } from 'node:path'
 const root = resolve(import.meta.dirname, '..')
 const mgbaRevision = 'c034660f007c543233f1cadeb0ca13c71afd8f41'
 const jgenesisRevision = '0b26611fa23007f2632d32b7cdbdb6369b01eb91'
+const geckoRevision = 'da39be17b22eb7316e772d2369da15df3a52f7f0'
 
 const required = [
   'CORE_ABI.md',
   'CORE_TARGETS.md',
   'STREAMED_CORE_DESIGN.md',
+  'MODERN_CORE_PROBES.md',
   'cores/mgba/wisp_core.c',
   'cores/mgba/build.sh',
   'cores/jgenesis-common/prepare.sh',
@@ -16,6 +18,7 @@ const required = [
   'cores/jgenesis-genesis/src/lib.rs',
   'cores/jgenesis-snes/build.sh',
   'cores/jgenesis-snes/src/lib.rs',
+  'probes/gecko-web/build.sh',
   'packages/mgba/package.source.json',
   'packages/jgenesis-genesis/package.source.json',
   'packages/jgenesis-snes/package.source.json',
@@ -30,6 +33,7 @@ for (const path of required) {
 assertPinnedBuild('cores/mgba/build.sh', 'MGBA_REF', mgbaRevision, 'mGBA.license')
 assertPinnedBuild('cores/jgenesis-genesis/build.sh', 'JGENESIS_REF', jgenesisRevision, 'jgenesis.license')
 assertPinnedBuild('cores/jgenesis-snes/build.sh', 'JGENESIS_REF', jgenesisRevision, 'jgenesis.license')
+assertPinnedSource('probes/gecko-web/build.sh', 'GECKO_REF', geckoRevision)
 
 for (const path of [
   'cores/mgba/wisp_core.c',
@@ -64,9 +68,12 @@ assertPackage({
   repository: 'https://github.com/jsgroth/jgenesis', revision: jgenesisRevision, license: 'GPL-3.0',
 })
 
+const modernProbes = readFileSync(resolve(root, 'MODERN_CORE_PROBES.md'), 'utf8')
+if (!modernProbes.includes(geckoRevision)) throw new Error('Gecko probe documentation must name the pinned revision')
+
 const references = readFileSync(resolve(root, 'REFERENCES.md'), 'utf8')
 for (const source of [
-  'mgba-emu/mgba', 'jsgroth/jgenesis', 'dolphin-emu/dolphin',
+  'mgba-emu/mgba', 'jsgroth/jgenesis', 'ioncodes/gecko', 'dolphin-emu/dolphin',
   'cemu-project/Cemu', 'xenia-project/xenia', 'voland-emu/Voland',
 ]) {
   if (!references.includes(source)) throw new Error(`REFERENCES.md is missing ${source}`)
@@ -74,13 +81,18 @@ for (const source of [
 
 console.log('Verified emulator source policy and pinned core targets')
 
-function assertPinnedBuild(path, variable, revision, licenseArtifact) {
-  const build = readFileSync(resolve(root, path), 'utf8')
+function assertPinnedSource(path, variable, revision) {
+  const source = readFileSync(resolve(root, path), 'utf8')
   const expected = `${variable}="\${${variable}:-${revision}}"`
-  if (!build.includes(expected)) throw new Error(`${path} must default to reviewed revision ${revision}`)
-  if (/archive\/(?:tip|master|main)|checkout\s+(?:master|main)\b/.test(build)) {
+  if (!source.includes(expected)) throw new Error(`${path} must default to reviewed revision ${revision}`)
+  if (/archive\/(?:tip|master|main)|checkout\s+(?:master|main)\b/.test(source)) {
     throw new Error(`${path} cannot default to a moving upstream revision`)
   }
+}
+
+function assertPinnedBuild(path, variable, revision, licenseArtifact) {
+  assertPinnedSource(path, variable, revision)
+  const build = readFileSync(resolve(root, path), 'utf8')
   if (!build.includes(licenseArtifact)) throw new Error(`${path} must preserve ${licenseArtifact}`)
 }
 

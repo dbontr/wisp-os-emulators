@@ -7,9 +7,9 @@ WispOS itself stays small. Emulator cores install on demand under `WispOS/Emulat
 ## Core tiers
 
 - **ABI 1 cartridge cores** are compact standalone WebAssembly reactors. Build adapters currently cover mGBA for GB/GBC/GBA and jgenesis for Mega Drive/Genesis and SNES.
-- **Streamed high-performance cores** cover large-media systems such as GameCube/Wii, Wii U, Xbox 360, and Switch. They remain completely optional and require a separate bounded media/GPU/thread execution contract before catalog publication.
+- **Streamed high-performance cores** cover large-media systems such as GameCube/Wii, Wii U, Xbox 360, and Switch. They remain completely optional and require a separate bounded media/GPU/thread execution contract before catalog publication. GameCube/Wii currently has a pinned Gecko browser-build probe because Gecko already targets WebAssembly/WebGPU upstream.
 
-See `CORE_TARGETS.md`, `CORE_ABI.md`, and `STREAMED_CORE_DESIGN.md` for the current contracts and gates.
+See `CORE_TARGETS.md`, `CORE_ABI.md`, `STREAMED_CORE_DESIGN.md`, and `MODERN_CORE_PROBES.md` for the current contracts and gates.
 
 ## Trust model
 
@@ -32,4 +32,4 @@ Every published ABI 1 package declares:
 - a signed artifact table containing the applicable upstream license
 - no WispOS service permissions
 
-The catalog remains conservative: source or a build recipe is not enough. A core appears in `catalog.json` only after its built package is functional in the browser, license-complete, signed, and verified.
+The catalog remains conservative: source, an upstream browser build, or a build recipe is not enough. A core appears in `catalog.json` only after its built package is functional in the browser, license-complete, signed, isolated behind WispOS capabilities, and verified.

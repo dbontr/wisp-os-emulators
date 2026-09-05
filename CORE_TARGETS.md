@@ -2,17 +2,17 @@
 
 WispOS keeps console implementations out of the base operating-system image. Each target is an independently installable core package and does not affect WispOS boot size unless the user installs it.
 
-A target is catalog-eligible only after its pinned build is reproducible, the resulting package satisfies its Wisp core ABI, license obligations are included, and a functional browser smoke test passes with legal test software. A source adapter or successful compile alone is not a compatibility claim.
+A target is catalog-eligible only after its pinned build is reproducible, the resulting package satisfies its Wisp core ABI, license obligations are included, and a functional browser smoke test passes with legal test software. A source adapter, upstream web build, or successful compile alone is not a compatibility claim.
 
-| Systems | Package target | Execution tier | Upstream | Package size goal | Gate |
+| Systems | Candidate | Execution tier | Upstream | Package size goal | Gate |
 | --- | --- | --- | --- | ---: | --- |
 | Game Boy / Game Boy Color / Game Boy Advance | `mgba` | ABI 1 cartridge | mGBA | <= 1.5 MiB | Build implemented; ABI and browser smoke gates required |
 | Mega Drive / Genesis | `jgenesis-genesis` | ABI 1 cartridge | jgenesis | <= 2 MiB | ABI verified; browser smoke gate required |
 | Super Nintendo / Super Famicom | `jgenesis-snes` | ABI 1 cartridge | jgenesis | <= 1 MiB | ABI verified; browser smoke gate required |
-| GameCube / Wii | `dolphin` | streamed high-performance | Dolphin | measured, no artificial cap | Streamed ABI and browser execution research required |
-| Wii U | `cemu` | streamed high-performance | Cemu | measured, no artificial cap | Streamed ABI and browser execution research required |
-| Xbox 360 | `xenia` | streamed high-performance | Xenia | measured, no artificial cap | Streamed ABI and browser execution research required |
-| Nintendo Switch | `switch` | streamed high-performance | browser-native research; Voland as an architecture reference | measured, no artificial cap | Research target; no functional catalog core yet |
+| GameCube / Wii | `gecko-web` | streamed high-performance | Gecko; Dolphin as compatibility reference | measured, no artificial cap | Upstream browser build exists; Wisp isolation and streamed-media adapter required |
+| Wii U | `cemu` | streamed high-performance | Cemu | measured, no artificial cap | Dedicated browser CPU/GPU/platform port required |
+| Xbox 360 | `xenia` | streamed high-performance | Xenia | measured, no artificial cap | CPU translation and WebGPU feasibility required before package work |
+| Nintendo Switch | `switch` | streamed high-performance | browser-native research; Voland as architecture reference | measured, no artificial cap | Research target; no functional catalog core yet |
 
 ## Size policy
 
@@ -32,3 +32,5 @@ The WispOS base image must never absorb an emulator implementation merely to red
 5. Keep cartridge cores on ABI 1. Large random-access media requires the streamed execution design and must not be copied through kernel IPC or entirely duplicated in core memory.
 6. Include the upstream license and an immutable Corresponding Source reference in every distributed core package.
 7. Do not add a core to `catalog.json` until its signed package is functional and independently verified.
+
+See `MODERN_CORE_PROBES.md` for the measured pre-package path for large-media systems.

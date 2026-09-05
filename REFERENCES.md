@@ -9,7 +9,8 @@
 - [mGBA](https://github.com/mgba-emu/mgba) — mGBA project, MPL-2.0. Used for: GB/GBC/GBA emulation and the compact ABI 1 core build.
 - [mGBA-wasm](https://github.com/wasm-gaming/mGBA-wasm) — wasm-gaming. Used for: reference Emscripten configuration for a frontend-free mGBA WebAssembly build and direct `mCore` browser adapter.
 - [jgenesis](https://github.com/jsgroth/jgenesis) — jsgroth, GPL-3.0. Used for: compact Mega Drive/Genesis and SNES ABI 1 cores at a pinned source revision.
-- [Dolphin](https://github.com/dolphin-emu/dolphin) — Dolphin Emulator project, GPL-2.0-or-later. Used for: GameCube/Wii streamed-core architecture target.
+- [Gecko](https://github.com/ioncodes/gecko) — ioncodes, GPL-3.0. Used for: the primary GameCube/Wii browser-build probe and WebAssembly/WebGPU port candidate.
+- [Dolphin](https://github.com/dolphin-emu/dolphin) — Dolphin Emulator project, GPL-2.0-or-later. Used for: mature GameCube/Wii compatibility and architecture reference.
 - [Cemu](https://github.com/cemu-project/Cemu) — Cemu project, MPL-2.0. Used for: Wii U streamed-core architecture target.
 - [Xenia](https://github.com/xenia-project/xenia) — Xenia project, BSD-3-Clause. Used for: Xbox 360 streamed-core architecture target.
 - [Voland](https://github.com/voland-emu/Voland) — Voland project, GPL-2.0. Used for: browser-native WebAssembly/WebGPU architecture research for a future Switch target; it is not treated as a functional compatibility core.
