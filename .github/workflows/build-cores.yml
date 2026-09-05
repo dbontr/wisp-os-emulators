@@ -57,3 +57,20 @@ jobs:
           name: wisp-core-genesis
           path: build/jgenesis-genesis/*
           if-no-files-found: error
+
+  snes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Build raw jgenesis SNES core
+        run: bash cores/jgenesis-snes/build.sh
+      - name: Verify Wisp ABI and size
+        run: node scripts/check-core-wasm.mjs build/jgenesis-snes/core.wasm 2097152
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wisp-core-snes
+          path: build/jgenesis-snes/*
+          if-no-files-found: error
