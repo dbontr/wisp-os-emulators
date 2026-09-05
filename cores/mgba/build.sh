@@ -84,9 +84,7 @@ emcc \
     "${ROOT}/cores/mgba/wisp_core.c" "${LIB}" \
     --no-entry \
     -sSTANDALONE_WASM=1 \
-    -sALLOW_MEMORY_GROWTH=1 \
-    -sINITIAL_MEMORY=67108864 \
-    -sMAXIMUM_MEMORY=536870912 \
+    -sINITIAL_MEMORY=134217728 \
     -sSTACK_SIZE=1048576 \
     -sMALLOC=emmalloc \
     -Wl,--allow-undefined \
