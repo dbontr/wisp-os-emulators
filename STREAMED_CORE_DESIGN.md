@@ -12,9 +12,9 @@ These systems must not cross the WispOS kernel's bounded JSON IPC channel as exe
 
 A future streamed core ABI must provide all of the following:
 
-- Demand-loaded execution in a dedicated worker or worker group.
+- Demand-loaded execution in an isolated runtime owned by WispOS, not in the Games application global scope.
 - Bounded random-access reads over the user's selected game image.
-- No Microsoft token, OneDrive provider object, filesystem root, or unrestricted network authority in the emulator core.
+- No Microsoft token, OneDrive provider object, filesystem root, Games service bridge, or unrestricted network authority in the emulator core.
 - WebGPU as the preferred translated GPU backend when the emulator architecture can support it, with explicit capability negotiation and a safe fallback or a clear unsupported result.
 - Shared-memory/thread support only when cross-origin isolation is active and the selected core declares that requirement.
 - Per-core memory and worker limits that are visible before launch.
@@ -24,37 +24,50 @@ A future streamed core ABI must provide all of the following:
 
 ## Media transport
 
-The canonical game image remains in the user-selected data source. A trusted WispOS userspace service may materialize an authenticated range into a bounded device-local cache. For a dedicated worker, a synchronous core-facing read can be backed by already-present memory pages or a `FileSystemSyncAccessHandle` over disposable OPFS cache data. Cache misses are resolved by the trusted service between execution slices; the core never receives provider credentials.
+The canonical game image remains in the user-selected data source. A trusted WispOS userspace service may materialize authenticated ranges into a bounded device-local cache. The core sees a logical immutable media object with size and block-read semantics, never a provider URL or credential.
 
-The runtime should expose media as a logical immutable object with size and block-read semantics rather than a provider URL. A typical low-level shape is:
+For a worker-oriented core, synchronous guest reads may be backed by already-present memory pages or a `FileSystemSyncAccessHandle` over disposable OPFS cache data. Cache misses are resolved by the trusted WispOS side between execution slices or through a bounded request queue.
+
+A typical low-level shape is:
 
 ```c
-uint64_t wisp_media_size(void);
-int32_t  wisp_media_read(uint64_t offset, uint32_t dst, uint32_t bytes);
+uint64_t wisp_media_size(uint32_t media_id);
+int32_t  wisp_media_read(uint32_t media_id, uint64_t offset, uint32_t dst, uint32_t bytes);
 ```
 
-A production ABI must specify cache-miss behavior, cancellation, read alignment, maximum request size, and concurrency before these functions become stable.
+The production contract must specify cache-miss behavior, cancellation, read alignment, maximum request size, queue depth, and concurrency before these functions become stable.
+
+## Execution containment
+
+Modern upstream browser frontends may contain JavaScript/wasm-bindgen glue, DOM code, file pickers, or storage access. WispOS must not execute that code directly in the Games app global scope.
+
+The target design is a Wisp-owned isolated runtime with a single transferred `MessagePort` (or an equivalent narrow binary channel) plus explicitly granted render/input/audio primitives. The core receives no Wisp app-service bridge. Network access is denied by runtime policy. Executable JavaScript, if a particular upstream requires it, must be signed as part of the core package and executed only inside this isolated runtime; merely adding `.js` to the existing ABI 1 artifact allowlist is not acceptable.
+
+The first implementation should prefer raw WebAssembly where practical. A browser-native upstream that requires generated JavaScript glue is a candidate for the streamed runtime, not ABI 1.
 
 ## Execution profiles
 
-The future package metadata should declare a bounded execution profile rather than guessing from a console name. Candidate fields include:
+Future package metadata should declare a bounded execution profile rather than guessing from a console name. Candidate fields include:
 
 - minimum and preferred WebAssembly memory;
 - maximum worker count;
 - shared-memory requirement;
 - SIMD requirement;
 - WebGPU requirement and required limits/features;
-- media access mode;
-- firmware material types, when legally required from the user;
-- optional persistent shader/cache budget.
+- media access mode and maximum read request;
+- firmware/system-material slots, when legally required from the user;
+- optional disposable shader/JIT/cache budget;
+- whether signed loader JavaScript is required.
 
 WispOS may refuse launch when the browser cannot meet a declared hard requirement. It must not silently grant broader host authority.
 
 ## Console targets
 
-- GameCube and Wii: Dolphin is the primary upstream architecture to evaluate.
-- Wii U: Cemu is the primary upstream architecture to evaluate.
-- Xbox 360: Xenia is the primary upstream architecture to evaluate.
-- Switch: browser-native work is required before a functional package can be promised. Voland is useful as a WebAssembly/WebGPU architecture reference but is not treated as a functional compatibility core.
+- GameCube and Wii: Gecko is the primary browser-port candidate because its upstream project already builds the emulator for WebAssembly/WebGPU. Dolphin remains the mature compatibility and architecture reference.
+- Wii U: Cemu is the primary compatibility reference; a dedicated browser CPU/GPU/platform adaptation is required before packaging.
+- Xbox 360: Xenia is the primary compatibility reference; CPU translation and WebGPU feasibility come before packaging.
+- Switch: Voland is the preferred browser-architecture research target, but it is not treated as a functional compatibility core until legal test software actually executes.
 
-No target in this section is cataloged until it executes legal test software through the signed WispOS package boundary and passes performance, isolation, and recovery gates.
+See `STREAMED_CORE_ABI_DRAFT.md` for the first concrete host/runtime contract and `MODERN_CORE_PROBES.md` for measured upstream build probes.
+
+No target in this section is cataloged until it executes legal test software through the signed WispOS package boundary and passes performance, isolation, recovery, and licensing gates.
