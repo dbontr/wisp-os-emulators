@@ -44,7 +44,7 @@ if (packageSource.id !== 'mgba' || packageSource.entrypoint !== 'core.wasm'
   throw new Error('mGBA package source does not match Wisp core ABI 1')
 }
 const systems = packageSource.metadata.systems.map((system) => system.id).sort().join(',')
-if (systems !== 'gb,gbc,gba') throw new Error('mGBA package must declare GB, GBC, and GBA exactly')
+if (systems !== 'gb,gba,gbc') throw new Error('mGBA package must declare GB, GBC, and GBA exactly')
 if (!packageSource.artifactPaths.includes('mGBA.license')) throw new Error('mGBA package must include its license artifact')
 
 const references = readFileSync(resolve(root, 'REFERENCES.md'), 'utf8')
