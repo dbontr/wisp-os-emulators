@@ -6,12 +6,14 @@ on:
       - 'cores/**'
       - 'packages/**'
       - 'scripts/check-core-wasm.mjs'
+      - 'scripts/smoke-core.mjs'
       - '.github/workflows/build-cores.yml'
   pull_request:
     paths:
       - 'cores/**'
       - 'packages/**'
       - 'scripts/check-core-wasm.mjs'
+      - 'scripts/smoke-core.mjs'
       - '.github/workflows/build-cores.yml'
   workflow_dispatch:
 
@@ -35,6 +37,8 @@ jobs:
           bash cores/mgba/build.sh
       - name: Verify Wisp ABI and size
         run: node scripts/check-core-wasm.mjs build/mgba/core.wasm 1572864
+      - name: Smoke GBA execution
+        run: node scripts/smoke-core.mjs build/mgba/core.wasm gba
       - uses: actions/upload-artifact@v4
         with:
           name: wisp-core-mgba
@@ -52,6 +56,8 @@ jobs:
         run: bash cores/jgenesis-genesis/build.sh
       - name: Verify Wisp ABI and size
         run: node scripts/check-core-wasm.mjs build/jgenesis-genesis/core.wasm 2097152
+      - name: Smoke Genesis execution
+        run: node scripts/smoke-core.mjs build/jgenesis-genesis/core.wasm genesis
       - uses: actions/upload-artifact@v4
         with:
           name: wisp-core-genesis
@@ -69,6 +75,8 @@ jobs:
         run: bash cores/jgenesis-snes/build.sh
       - name: Verify Wisp ABI and size
         run: node scripts/check-core-wasm.mjs build/jgenesis-snes/core.wasm 1048576
+      - name: Smoke SNES execution
+        run: node scripts/smoke-core.mjs build/jgenesis-snes/core.wasm snes
       - uses: actions/upload-artifact@v4
         with:
           name: wisp-core-snes
