@@ -6,6 +6,7 @@ use jgenesis_common::frontend::{
 };
 use jgenesis_common::input::Player;
 use std::alloc::{alloc, dealloc, Layout};
+use std::cell::RefCell;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::ptr;
@@ -168,9 +169,27 @@ struct CoreState {
     audio: HostAudio,
 }
 
-// ABI 1 is single-threaded. Games instantiates one module per player session and never calls a core
-// concurrently, so this mutable module state has one owner for the lifetime of the instance.
-static mut CORE: Option<CoreState> = None;
+// ABI 1 is single-threaded and non-reentrant. Each module instance owns exactly one session.
+// Thread-local interior mutability makes that ownership explicit without `static mut` references.
+thread_local! {
+    static CORE: RefCell<Option<CoreState>> = RefCell::new(None);
+}
+
+fn replace_core(state: Option<CoreState>) {
+    CORE.with(|slot| *slot.borrow_mut() = state);
+}
+
+fn take_core() -> Option<CoreState> {
+    CORE.with(|slot| slot.borrow_mut().take())
+}
+
+fn with_core<R>(f: impl FnOnce(&CoreState) -> R) -> Option<R> {
+    CORE.with(|slot| slot.borrow().as_ref().map(f))
+}
+
+fn with_core_mut<R>(f: impl FnOnce(&mut CoreState) -> R) -> Option<R> {
+    CORE.with(|slot| slot.borrow_mut().as_mut().map(f))
+}
 
 fn pressed(control: u32) -> bool {
     unsafe { host_input_state(0, control) != 0 }
@@ -204,6 +223,7 @@ pub extern "C" fn wisp_core_api_version() -> u32 {
 
 #[no_mangle]
 pub extern "C" fn wisp_core_init() -> i32 {
+    replace_core(None);
     1
 }
 
@@ -212,7 +232,7 @@ pub unsafe extern "C" fn wisp_core_load_game(ptr: u32, bytes: u32) -> i32 {
     if ptr == 0 || bytes == 0 {
         return 0;
     }
-    CORE = None;
+    replace_core(None);
     let rom = slice::from_raw_parts(ptr as usize as *const u8, bytes as usize).to_vec();
     let mut saves = SaveStore::default();
     let mut emulator = match GenesisEmulator::create(
@@ -227,18 +247,19 @@ pub unsafe extern "C" fn wisp_core_load_game(ptr: u32, bytes: u32) -> i32 {
         Err(_) => return 0,
     };
     emulator.update_audio_output_frequency(u64::from(AUDIO_RATE));
-    CORE = Some(CoreState {
+    replace_core(Some(CoreState {
         emulator,
         inputs: GenesisInputs::default(),
         saves,
         audio: HostAudio::new(),
-    });
+    }));
     1
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn wisp_core_run() {
-    let Some(state) = CORE.as_mut() else { return };
+pub extern "C" fn wisp_core_run() {
+    let Some(mut state) = take_core() else { return };
+
     update_inputs(&mut state.inputs);
     state.audio.begin_frame();
     let mut renderer = HostRenderer;
@@ -252,29 +273,29 @@ pub unsafe extern "C" fn wisp_core_run() {
         ) {
             Ok(TickEffect::FrameRendered) => {
                 state.audio.flush();
-                return;
+                break;
             }
             Ok(TickEffect::None) => {}
-            Err(_) => return,
+            Err(_) => break,
         }
     }
+
+    replace_core(Some(state));
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn wisp_core_reset() {
-    if let Some(state) = CORE.as_mut() {
-        state.emulator.soft_reset();
-    }
+pub extern "C" fn wisp_core_reset() {
+    with_core_mut(|state| state.emulator.soft_reset());
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn wisp_core_unload() {
-    CORE = None;
+pub extern "C" fn wisp_core_unload() {
+    replace_core(None);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn wisp_core_deinit() {
-    CORE = None;
+pub extern "C" fn wisp_core_deinit() {
+    replace_core(None);
 }
 
 #[no_mangle]
@@ -282,7 +303,7 @@ pub unsafe extern "C" fn wisp_core_alloc(bytes: u32) -> u32 {
     if bytes == 0 {
         return 0;
     }
-    let total = bytes as usize + ALLOC_HEADER_BYTES;
+    let Some(total) = (bytes as usize).checked_add(ALLOC_HEADER_BYTES) else { return 0 };
     let Ok(layout) = Layout::from_size_align(total, ALLOC_HEADER_BYTES) else { return 0 };
     let raw = alloc(layout);
     if raw.is_null() {
@@ -299,40 +320,41 @@ pub unsafe extern "C" fn wisp_core_free(ptr_value: u32) {
     }
     let raw = (ptr_value as usize as *mut u8).sub(ALLOC_HEADER_BYTES);
     let bytes = ptr::read(raw.cast::<u32>()) as usize;
-    if let Ok(layout) = Layout::from_size_align(bytes + ALLOC_HEADER_BYTES, ALLOC_HEADER_BYTES) {
+    let Some(total) = bytes.checked_add(ALLOC_HEADER_BYTES) else { return };
+    if let Ok(layout) = Layout::from_size_align(total, ALLOC_HEADER_BYTES) {
         dealloc(raw, layout);
     }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn wisp_core_save_ram_size() -> u32 {
-    CORE.as_ref()
-        .map(|state| state.saves.sav.len().min(u32::MAX as usize) as u32)
-        .unwrap_or(0)
+pub extern "C" fn wisp_core_save_ram_size() -> u32 {
+    with_core(|state| state.saves.sav.len().min(u32::MAX as usize) as u32).unwrap_or(0)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn wisp_core_export_save_ram(ptr_value: u32, capacity: u32) -> u32 {
-    let Some(state) = CORE.as_ref() else { return 0 };
-    let bytes = state.saves.sav.len();
-    if ptr_value == 0 || bytes == 0 || bytes > capacity as usize || bytes > u32::MAX as usize {
-        return 0;
-    }
-    ptr::copy_nonoverlapping(state.saves.sav.as_ptr(), ptr_value as usize as *mut u8, bytes);
-    bytes as u32
+    with_core(|state| {
+        let bytes = state.saves.sav.len();
+        if ptr_value == 0 || bytes == 0 || bytes > capacity as usize || bytes > u32::MAX as usize {
+            return 0;
+        }
+        ptr::copy_nonoverlapping(state.saves.sav.as_ptr(), ptr_value as usize as *mut u8, bytes);
+        bytes as u32
+    })
+    .unwrap_or(0)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn wisp_core_import_save_ram(ptr_value: u32, bytes: u32) -> i32 {
-    let Some(state) = CORE.as_mut() else { return 0 };
     if ptr_value == 0 || bytes == 0 {
         return 0;
     }
-    state.saves.sav.clear();
-    state.saves.sav.extend_from_slice(slice::from_raw_parts(
-        ptr_value as usize as *const u8,
-        bytes as usize,
-    ));
-    state.emulator.hard_reset(&mut state.saves);
-    1
+    let input = slice::from_raw_parts(ptr_value as usize as *const u8, bytes as usize).to_vec();
+    with_core_mut(|state| {
+        state.saves.sav.clear();
+        state.saves.sav.extend_from_slice(&input);
+        state.emulator.hard_reset(&mut state.saves);
+        1
+    })
+    .unwrap_or(0)
 }
