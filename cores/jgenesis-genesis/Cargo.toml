@@ -1,0 +1,21 @@
+[package]
+name = "wisp-jgenesis-genesis"
+version = "1.0.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+bincode = "2"
+genesis-config = { path = "../../.tmp/jgenesis-src/config/genesis-config" }
+genesis-core = { path = "../../.tmp/jgenesis-src/backend/genesis-core" }
+jgenesis-common = { path = "../../.tmp/jgenesis-src/common/jgenesis-common" }
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
