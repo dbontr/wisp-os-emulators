@@ -54,6 +54,14 @@ replace_once(
     'void mCoreConfigDirectory(char* out, size_t outLength) {\n\tchar portableDir[PATH_MAX];',
     'void mCoreConfigDirectory(char* out, size_t outLength) {\n#ifdef __EMSCRIPTEN__\n\tUNUSED(outLength);\n\tout[0] = \'\\0\';\n\treturn;\n#endif\n\tchar portableDir[PATH_MAX];',
 )
+# Emscripten can retain the libc getcwd shim when this object is linked even
+# though the browser-only branch above is selected. The Wisp core never owns a
+# host working directory, so make the dormant fallback fail closed as well.
+replace_once(
+    root / 'src/core/config.c',
+    '\tgetcwd(out, outLength);',
+    "\tUNUSED(outLength);\n\tout[0] = '\\0';\n\treturn;",
+)
 PY
 rm -rf "${BUILD_DIR}"
 
