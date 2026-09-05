@@ -164,7 +164,7 @@ WISP_EXPORT int32_t wisp_core_load_game(uint32_t ptr, uint32_t bytes) {
         .logLevel = mLOG_FATAL | mLOG_ERROR,
     };
     mCoreConfigLoadDefaults(&core->config, &defaults);
-    mCoreLoadConfig(core);
+    mCoreLoadForeignConfig(core, &core->config);
 
     native_video = calloc(VIDEO_WIDTH_MAX * VIDEO_HEIGHT_MAX, sizeof(mColor));
     rgba_video = calloc(VIDEO_WIDTH_MAX * VIDEO_HEIGHT_MAX, sizeof(uint32_t));
