@@ -130,7 +130,7 @@ emcc \
     -sFILESYSTEM=0 \
     -sINITIAL_MEMORY=134217728 \
     -sSTACK_SIZE=1048576 \
-    -sMALLOC=emmalloc \
+    -sMALLOC=dlmalloc \
     -Wl,--allow-undefined-file="${ROOT}/scripts/wisp-core-imports.txt" \
     "${LINK_EXPORTS[@]}" \
     -o "${OUT_DIR}/core.wasm"
