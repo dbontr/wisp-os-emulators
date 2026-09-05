@@ -1,0 +1,48 @@
+{
+  "format": 1,
+  "id": "jgenesis-genesis",
+  "name": "jgenesis Genesis",
+  "version": "1.0.0",
+  "kind": "emulator",
+  "entrypoint": "core.wasm",
+  "artifacts": [
+    {
+      "path": "core.wasm",
+      "bytes": 1330585,
+      "sha256": "8fbccf01601cc2642d0f5f6a55f46b9ae6c56cc753e7070f5c84991d1d5b39a5"
+    },
+    {
+      "path": "jgenesis.license",
+      "bytes": 35149,
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    }
+  ],
+  "permissions": [],
+  "metadata": {
+    "type": "emulator-core",
+    "coreAbi": 1,
+    "systems": [
+      {
+        "id": "genesis",
+        "name": "Mega Drive / Genesis",
+        "extensions": [
+          "md",
+          "bin",
+          "gen",
+          "smd"
+        ]
+      }
+    ],
+    "source": {
+      "repository": "https://github.com/jsgroth/jgenesis",
+      "revision": "0b26611fa23007f2632d32b7cdbdb6369b01eb91",
+      "license": "GPL-3.0",
+      "correspondingSource": "https://github.com/jsgroth/jgenesis/tree/0b26611fa23007f2632d32b7cdbdb6369b01eb91"
+    }
+  },
+  "signature": {
+    "keyId": "897b000f312c6acc",
+    "algorithm": "ECDSA-P256-SHA256",
+    "value": "N1Z280fvq8rl68xR2vE6eoWgn21/3OXgJHsQ9wCHeVS0SijIOmPTv6umhvbXKUTSn9Suw2i49W2axmaX186rYw=="
+  }
+}

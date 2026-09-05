@@ -1,0 +1,23 @@
+[package]
+name = "wisp-jgenesis-snes"
+version = "1.0.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+path = "src/root.rs"
+
+[dependencies]
+bincode = "2"
+getrandom = "0.4"
+jgenesis-common = { path = "../../.tmp/jgenesis-src/common/jgenesis-common" }
+snes-config = { path = "../../.tmp/jgenesis-src/config/snes-config" }
+snes-core = { path = "../../.tmp/jgenesis-src/backend/snes-core" }
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

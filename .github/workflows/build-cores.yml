@@ -1,0 +1,84 @@
+name: build emulator cores
+
+on:
+  push:
+    paths:
+      - 'cores/**'
+      - 'packages/**'
+      - 'scripts/check-core-wasm.mjs'
+      - 'scripts/smoke-core.mjs'
+      - '.github/workflows/build-cores.yml'
+  pull_request:
+    paths:
+      - 'cores/**'
+      - 'packages/**'
+      - 'scripts/check-core-wasm.mjs'
+      - 'scripts/smoke-core.mjs'
+      - '.github/workflows/build-cores.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mgba:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Build stripped mGBA core
+        run: >-
+          docker run --rm
+          -v "$PWD:/src"
+          -w /src
+          emscripten/emsdk:4.0.11
+          bash cores/mgba/build.sh
+      - name: Verify Wisp ABI and size
+        run: node scripts/check-core-wasm.mjs build/mgba/core.wasm 1572864
+      - name: Smoke GBA execution
+        run: node scripts/smoke-core.mjs build/mgba/core.wasm gba
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wisp-core-mgba
+          path: build/mgba/*
+          if-no-files-found: error
+
+  genesis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Build raw jgenesis Genesis core
+        run: bash cores/jgenesis-genesis/build.sh
+      - name: Verify Wisp ABI and size
+        run: node scripts/check-core-wasm.mjs build/jgenesis-genesis/core.wasm 2097152
+      - name: Smoke Genesis execution
+        run: node scripts/smoke-core.mjs build/jgenesis-genesis/core.wasm genesis
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wisp-core-genesis
+          path: build/jgenesis-genesis/*
+          if-no-files-found: error
+
+  snes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Build raw jgenesis SNES core
+        run: bash cores/jgenesis-snes/build.sh
+      - name: Verify Wisp ABI and size
+        run: node scripts/check-core-wasm.mjs build/jgenesis-snes/core.wasm 1048576
+      - name: Smoke SNES execution
+        run: node scripts/smoke-core.mjs build/jgenesis-snes/core.wasm snes
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wisp-core-snes
+          path: build/jgenesis-snes/*
+          if-no-files-found: error

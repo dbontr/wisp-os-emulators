@@ -1,0 +1,46 @@
+{
+  "format": 1,
+  "id": "jgenesis-snes",
+  "name": "jgenesis SNES",
+  "version": "1.0.0",
+  "kind": "emulator",
+  "entrypoint": "core.wasm",
+  "artifacts": [
+    {
+      "path": "core.wasm",
+      "bytes": 688457,
+      "sha256": "80f4594f8876cceace8dc2ac0ea858018d6500b4f7ca8829c4316df2002ae7dc"
+    },
+    {
+      "path": "jgenesis.license",
+      "bytes": 35149,
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    }
+  ],
+  "permissions": [],
+  "metadata": {
+    "type": "emulator-core",
+    "coreAbi": 1,
+    "systems": [
+      {
+        "id": "snes",
+        "name": "Super Nintendo / Super Famicom",
+        "extensions": [
+          "sfc",
+          "smc"
+        ]
+      }
+    ],
+    "source": {
+      "repository": "https://github.com/jsgroth/jgenesis",
+      "revision": "0b26611fa23007f2632d32b7cdbdb6369b01eb91",
+      "license": "GPL-3.0",
+      "correspondingSource": "https://github.com/jsgroth/jgenesis/tree/0b26611fa23007f2632d32b7cdbdb6369b01eb91"
+    }
+  },
+  "signature": {
+    "keyId": "897b000f312c6acc",
+    "algorithm": "ECDSA-P256-SHA256",
+    "value": "1yOLAXI7YFgs+dh448MapQNsik+VgNrY1feIqdGVD76cvdPwn3vi27hEdUtmMdO3uUuzpeKjpqXd7Od7AP5tqw=="
+  }
+}
