@@ -9,7 +9,7 @@ MGBA_REPO="${MGBA_REPO:-https://github.com/mgba-emu/mgba.git}"
 MGBA_REF="${MGBA_REF:-c034660f007c543233f1cadeb0ca13c71afd8f41}"
 JOBS="${MGBA_JOBS:-$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)}"
 
-for command in git emcmake cmake emcc; do
+for command in git emcmake cmake emcc python3; do
     command -v "${command}" >/dev/null 2>&1 || { echo "missing build tool: ${command}" >&2; exit 1; }
 done
 
@@ -20,7 +20,31 @@ fi
 git -C "${SOURCE_DIR}" fetch --quiet origin "${MGBA_REF}"
 git -C "${SOURCE_DIR}" checkout --quiet --detach "${MGBA_REF}"
 git -C "${SOURCE_DIR}" reset --quiet --hard "${MGBA_REF}"
-git -C "${SOURCE_DIR}" apply "${ROOT}/cores/mgba/no-posix-vfs.patch"
+
+python3 - "${SOURCE_DIR}" <<'PY'
+from pathlib import Path
+import sys
+
+root = Path(sys.argv[1])
+
+def replace_once(path: Path, old: str, new: str) -> None:
+    text = path.read_text(encoding='utf-8')
+    count = text.count(old)
+    if count != 1:
+        raise SystemExit(f'{path}: expected one source match, found {count}')
+    path.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+replace_once(
+    root / 'CMakeLists.txt',
+    'elseif(UNIX)\n\tset(USE_PTHREADS ON)',
+    'elseif(UNIX AND NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten")\n\tset(USE_PTHREADS ON)',
+)
+replace_once(
+    root / 'src/util/vfs.c',
+    '#elif defined(ENABLE_VFS_FD)\n\treturn VFileOpenFD(path, flags);\n#else\n#error "Can\'t build VFS subsystem without a VFile backend"',
+    '#elif defined(ENABLE_VFS_FD)\n\treturn VFileOpenFD(path, flags);\n#elif defined(__EMSCRIPTEN__)\n\t(void) path;\n\t(void) flags;\n\treturn 0;\n#else\n#error "Can\'t build VFS subsystem without a VFile backend"',
+)
+PY
 rm -rf "${BUILD_DIR}"
 
 emcmake cmake \
