@@ -19,6 +19,8 @@ if [ ! -d "${SOURCE_DIR}/.git" ]; then
 fi
 git -C "${SOURCE_DIR}" fetch --quiet origin "${MGBA_REF}"
 git -C "${SOURCE_DIR}" checkout --quiet --detach "${MGBA_REF}"
+git -C "${SOURCE_DIR}" reset --quiet --hard "${MGBA_REF}"
+git -C "${SOURCE_DIR}" apply "${ROOT}/cores/mgba/no-posix-vfs.patch"
 rm -rf "${BUILD_DIR}"
 
 emcmake cmake \
