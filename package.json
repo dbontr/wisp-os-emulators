@@ -1,0 +1,11 @@
+{
+  "name": "wisp-os-emulators",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "sign": "node scripts/sign-catalog.mjs",
+    "verify": "node scripts/verify-catalog.mjs"
+  }
+}
