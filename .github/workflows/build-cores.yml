@@ -1,0 +1,40 @@
+name: build emulator cores
+
+on:
+  push:
+    paths:
+      - 'cores/**'
+      - 'scripts/check-core-wasm.mjs'
+      - '.github/workflows/build-cores.yml'
+  pull_request:
+    paths:
+      - 'cores/**'
+      - 'scripts/check-core-wasm.mjs'
+      - '.github/workflows/build-cores.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mgba:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Build stripped mGBA core
+        run: >-
+          docker run --rm
+          -v "$PWD:/src"
+          -w /src
+          emscripten/emsdk:4.0.11
+          bash cores/mgba/build.sh
+      - name: Verify Wisp ABI and size
+        run: node scripts/check-core-wasm.mjs build/mgba/core.wasm 1572864
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wisp-core-mgba
+          path: build/mgba/core.wasm
+          if-no-files-found: error
