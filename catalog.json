@@ -1,11 +1,78 @@
 {
   "format": 1,
   "name": "WispOS Emulator Library",
-  "updatedAt": "2026-09-05T12:45:00Z",
-  "cores": [],
+  "updatedAt": "2026-09-05T22:37:33Z",
+  "cores": [
+    {
+      "id": "mgba",
+      "name": "mGBA",
+      "version": "1.0.0",
+      "description": "Game Boy, Game Boy Color, and Game Boy Advance core powered by mGBA.",
+      "systems": [
+        {
+          "id": "gb",
+          "name": "Game Boy",
+          "extensions": [
+            "gb"
+          ]
+        },
+        {
+          "id": "gbc",
+          "name": "Game Boy Color",
+          "extensions": [
+            "gbc"
+          ]
+        },
+        {
+          "id": "gba",
+          "name": "Game Boy Advance",
+          "extensions": [
+            "gba"
+          ]
+        }
+      ],
+      "packageUrl": "https://raw.githubusercontent.com/dbontr/wisp-os-emulators/71c7a92289c1a630400492c3c59a5cb37ae63db8/packages/mgba/1.0.0/package.json"
+    },
+    {
+      "id": "jgenesis-genesis",
+      "name": "jgenesis Genesis",
+      "version": "1.0.0",
+      "description": "Mega Drive and Genesis core powered by jgenesis.",
+      "systems": [
+        {
+          "id": "genesis",
+          "name": "Mega Drive / Genesis",
+          "extensions": [
+            "md",
+            "bin",
+            "gen",
+            "smd"
+          ]
+        }
+      ],
+      "packageUrl": "https://raw.githubusercontent.com/dbontr/wisp-os-emulators/71c7a92289c1a630400492c3c59a5cb37ae63db8/packages/jgenesis-genesis/1.0.0/package.json"
+    },
+    {
+      "id": "jgenesis-snes",
+      "name": "jgenesis SNES",
+      "version": "1.0.0",
+      "description": "Super Nintendo and Super Famicom core powered by jgenesis.",
+      "systems": [
+        {
+          "id": "snes",
+          "name": "Super Nintendo / Super Famicom",
+          "extensions": [
+            "sfc",
+            "smc"
+          ]
+        }
+      ],
+      "packageUrl": "https://raw.githubusercontent.com/dbontr/wisp-os-emulators/71c7a92289c1a630400492c3c59a5cb37ae63db8/packages/jgenesis-snes/1.0.0/package.json"
+    }
+  ],
   "signature": {
     "keyId": "897b000f312c6acc",
     "algorithm": "ECDSA-P256-SHA256",
-    "value": "6iGGSNkkQI4n/noKLuoQoZmotDYee9LheCLDAOlnNvIeQgoGtp8jDhfULFaPbq54b4zfexq2GFydAm4EMxPd8Q=="
+    "value": "FXCcJC1CVJtIezvzChyYBh2jOdz8Ua0YErs+x+ZfNg624BrnVIP6+0u8s0FMi7J24ZkVciqmYGaXGv0hA5KIwA=="
   }
 }
