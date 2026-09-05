@@ -4,11 +4,13 @@ on:
   push:
     paths:
       - 'cores/**'
+      - 'packages/**'
       - 'scripts/check-core-wasm.mjs'
       - '.github/workflows/build-cores.yml'
   pull_request:
     paths:
       - 'cores/**'
+      - 'packages/**'
       - 'scripts/check-core-wasm.mjs'
       - '.github/workflows/build-cores.yml'
   workflow_dispatch:
@@ -36,5 +38,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: wisp-core-mgba
-          path: build/mgba/core.wasm
+          path: build/mgba/*
           if-no-files-found: error

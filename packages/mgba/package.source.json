@@ -1,0 +1,16 @@
+{
+  "id": "mgba",
+  "name": "mGBA",
+  "version": "1.0.0",
+  "entrypoint": "core.wasm",
+  "artifactPaths": ["core.wasm", "mGBA.license"],
+  "metadata": {
+    "type": "emulator-core",
+    "coreAbi": 1,
+    "systems": [
+      { "id": "gb", "name": "Game Boy", "extensions": ["gb"] },
+      { "id": "gbc", "name": "Game Boy Color", "extensions": ["gbc"] },
+      { "id": "gba", "name": "Game Boy Advance", "extensions": ["gba"] }
+    ]
+  }
+}

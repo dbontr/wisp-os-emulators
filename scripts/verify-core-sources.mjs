@@ -8,7 +8,9 @@ const required = [
   'STREAMED_CORE_DESIGN.md',
   'cores/mgba/wisp_core.c',
   'cores/mgba/build.sh',
+  'packages/mgba/package.source.json',
   'scripts/check-core-wasm.mjs',
+  'scripts/sign-package.mjs',
   'REFERENCES.md',
 ]
 for (const path of required) {
@@ -23,6 +25,7 @@ if (!build.includes(`MGBA_REF="${'${MGBA_REF:-'}${expectedRef}}"`)) {
 if (/archive\/(?:tip|master|main)|checkout\s+(?:master|main)\b/.test(build)) {
   throw new Error('core build cannot default to a moving upstream revision')
 }
+if (!build.includes('mGBA.license')) throw new Error('mGBA build must preserve the upstream license')
 
 const core = readFileSync(resolve(root, 'cores/mgba/wisp_core.c'), 'utf8')
 for (const symbol of [
@@ -34,6 +37,15 @@ for (const symbol of [
 for (const prohibited of ['fetch(', 'XMLHttpRequest', 'WebSocket', 'Microsoft Graph']) {
   if (core.includes(prohibited)) throw new Error(`emulator adapter contains prohibited host authority: ${prohibited}`)
 }
+
+const packageSource = JSON.parse(readFileSync(resolve(root, 'packages/mgba/package.source.json'), 'utf8'))
+if (packageSource.id !== 'mgba' || packageSource.entrypoint !== 'core.wasm'
+  || packageSource.metadata?.type !== 'emulator-core' || packageSource.metadata?.coreAbi !== 1) {
+  throw new Error('mGBA package source does not match Wisp core ABI 1')
+}
+const systems = packageSource.metadata.systems.map((system) => system.id).sort().join(',')
+if (systems !== 'gb,gbc,gba') throw new Error('mGBA package must declare GB, GBC, and GBA exactly')
+if (!packageSource.artifactPaths.includes('mGBA.license')) throw new Error('mGBA package must include its license artifact')
 
 const references = readFileSync(resolve(root, 'REFERENCES.md'), 'utf8')
 for (const source of ['mgba-emu/mgba', 'dolphin-emu/dolphin', 'cemu-project/Cemu', 'xenia-project/xenia']) {

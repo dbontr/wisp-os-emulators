@@ -93,6 +93,7 @@ emcc \
     "${LINK_EXPORTS[@]}" \
     -o "${OUT_DIR}/core.wasm"
 
+cp "${SOURCE_DIR}/LICENSE" "${OUT_DIR}/mGBA.license"
 SIZE="$(wc -c < "${OUT_DIR}/core.wasm" | tr -d ' ')"
 echo "mGBA Wisp core: ${SIZE} bytes"
 if [ "${SIZE}" -gt 1572864 ]; then

@@ -6,6 +6,7 @@
   "engines": { "node": ">=24" },
   "scripts": {
     "sign": "node scripts/sign-catalog.mjs",
+    "sign:package": "node scripts/sign-package.mjs",
     "verify": "npm run verify:catalog && npm run verify:sources",
     "verify:catalog": "node scripts/verify-catalog.mjs",
     "verify:sources": "node scripts/verify-core-sources.mjs"
