@@ -22,6 +22,7 @@ git -C "${SOURCE_DIR}" reset --quiet --hard "${JGENESIS_REF}"
 
 rustup target add wasm32-unknown-unknown >/dev/null
 rm -rf "${TARGET_DIR}"
+RUSTFLAGS='--cfg getrandom_backend="custom"' \
 CARGO_TARGET_DIR="${TARGET_DIR}" cargo build \
     --manifest-path "${ROOT}/cores/jgenesis-genesis/Cargo.toml" \
     --target wasm32-unknown-unknown \

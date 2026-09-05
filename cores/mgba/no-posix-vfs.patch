@@ -11,3 +11,18 @@ index bab0090c3..d0d4cfb7e 100644
  	set(USE_PTHREADS ON)
  
  	if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+diff --git a/src/util/vfs.c b/src/util/vfs.c
+index 3158c5265..d96c00df1 100644
+--- a/src/util/vfs.c
++++ b/src/util/vfs.c
+@@ -98,6 +98,9 @@ struct VFile* VFileOpen(const char* path, int flags) {
+ 	return VFileOpen3DS(&sdmcArchive, path, ctrFlags);
+ #elif defined(ENABLE_VFS_FD)
+ 	return VFileOpenFD(path, flags);
++#elif defined(__EMSCRIPTEN__)
++	UNUSED(path);
++	UNUSED(flags);
++	return 0;
+ #else
+ #error "Can't build VFS subsystem without a VFile backend"
+ #endif
