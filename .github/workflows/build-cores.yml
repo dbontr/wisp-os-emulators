@@ -68,7 +68,7 @@ jobs:
       - name: Build raw jgenesis SNES core
         run: bash cores/jgenesis-snes/build.sh
       - name: Verify Wisp ABI and size
-        run: node scripts/check-core-wasm.mjs build/jgenesis-snes/core.wasm 2097152
+        run: node scripts/check-core-wasm.mjs build/jgenesis-snes/core.wasm 1048576
       - uses: actions/upload-artifact@v4
         with:
           name: wisp-core-snes

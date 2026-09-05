@@ -6,13 +6,11 @@
 - [Gamepad specification](https://w3c.github.io/gamepad/) — W3C Web Applications Working Group. Used for: common controller identities owned by Games rather than individual console cores.
 - [Web Audio API](https://www.w3.org/TR/webaudio-1.1/) — W3C Web Applications Working Group. Used for: Games audio output from bounded core PCM batches.
 - [Origin Private File System](https://fs.spec.whatwg.org/) — WHATWG File System Standard. Used for: candidate disposable range cache for streamed high-performance cores; it is not canonical game or save storage.
-- [mGBA](https://github.com/mgba-emu/mgba) — mGBA project, MPL-2.0. Used for: GB/GBC/GBA emulation and the first ABI 1 core build.
-- [mGBA-wasm](https://github.com/wasm-gaming/mGBA-wasm) — wasm-gaming. Used for: reference Emscripten configuration showing a frontend-free mGBA static-core WebAssembly build and direct `mCore` browser adapter.
-- [BlastEm](https://www.retrodev.com/blastem/) — Michael Pavone. Used for: Mega Drive/Genesis ABI 1 port target.
-- [blastem-wasm](https://github.com/wasm-gaming/blastem-wasm) — wasm-gaming. Used for: reference evidence that BlastEm builds under Emscripten before the Wisp-specific SDL-free adapter is implemented.
-- [bsnes](https://github.com/bsnes-emu/bsnes) — bsnes project, GPL-3.0-or-later. Used for: SNES core evaluation; catalog inclusion requires measured package size and a browser adapter.
+- [mGBA](https://github.com/mgba-emu/mgba) — mGBA project, MPL-2.0. Used for: GB/GBC/GBA emulation and the compact ABI 1 core build.
+- [mGBA-wasm](https://github.com/wasm-gaming/mGBA-wasm) — wasm-gaming. Used for: reference Emscripten configuration for a frontend-free mGBA WebAssembly build and direct `mCore` browser adapter.
+- [jgenesis](https://github.com/jsgroth/jgenesis) — jsgroth, GPL-3.0. Used for: compact Mega Drive/Genesis and SNES ABI 1 cores at a pinned source revision.
 - [Dolphin](https://github.com/dolphin-emu/dolphin) — Dolphin Emulator project, GPL-2.0-or-later. Used for: GameCube/Wii streamed-core architecture target.
 - [Cemu](https://github.com/cemu-project/Cemu) — Cemu project, MPL-2.0. Used for: Wii U streamed-core architecture target.
 - [Xenia](https://github.com/xenia-project/xenia) — Xenia project, BSD-3-Clause. Used for: Xbox 360 streamed-core architecture target.
-- [Voland](https://github.com/voland-emu/Voland) — Voland project. Used for: browser-native WebAssembly/WebGPU architecture research for a future Switch target; not treated as a functional compatibility core.
+- [Voland](https://github.com/voland-emu/Voland) — Voland project, GPL-2.0. Used for: browser-native WebAssembly/WebGPU architecture research for a future Switch target; it is not treated as a functional compatibility core.
 - [GitHub repository contents](https://docs.github.com/en/rest/repos/contents) — GitHub. Used for: signed catalog and package transport. GitHub is not a WispOS trust root.

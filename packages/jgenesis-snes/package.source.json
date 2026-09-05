@@ -1,0 +1,20 @@
+{
+  "id": "jgenesis-snes",
+  "name": "jgenesis SNES",
+  "version": "1.0.0",
+  "entrypoint": "core.wasm",
+  "artifactPaths": ["core.wasm", "jgenesis.license"],
+  "metadata": {
+    "type": "emulator-core",
+    "coreAbi": 1,
+    "systems": [
+      { "id": "snes", "name": "Super Nintendo / Super Famicom", "extensions": ["sfc", "smc"] }
+    ],
+    "source": {
+      "repository": "https://github.com/jsgroth/jgenesis",
+      "revision": "0b26611fa23007f2632d32b7cdbdb6369b01eb91",
+      "license": "GPL-3.0",
+      "correspondingSource": "https://github.com/jsgroth/jgenesis/tree/0b26611fa23007f2632d32b7cdbdb6369b01eb91"
+    }
+  }
+}
