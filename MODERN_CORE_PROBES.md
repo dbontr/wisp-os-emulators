@@ -8,7 +8,14 @@ Primary candidate: [ioncodes/gecko](https://github.com/ioncodes/gecko), pinned t
 
 Gecko is preferred for the first GameCube/Wii probe because it already maintains a browser build of the emulator. Its web crate uses `wasm32-unknown-unknown`, `wasm-bindgen`, and `wgpu` with the browser WebGPU backend. This avoids treating a desktop-only frontend as evidence of browser viability.
 
-`probes/gecko-web/build.sh` reproduces the upstream release browser build at the pinned revision and emits `probe-report.json` with exact generated file sizes. Probe artifacts are CI output only and are not added to `catalog.json`.
+`probes/gecko-web/build.sh` reproduces the upstream release browser build at the pinned revision and emits `probe-report.json` with exact generated file sizes. The verified probe produced:
+
+- JavaScript glue: 140,634 B
+- WebAssembly: 9,474,769 B
+- Total generated runtime: 9,615,403 B
+- GitHub Actions compressed probe artifact: about 3.39 MiB
+
+That size is appropriate for an optional demand-loaded modern-console plugin, not for the WispOS base image. Probe artifacts are CI output only and are not added to `catalog.json`.
 
 Before Gecko can become a WispOS core, the Wisp adapter must remove or own all of the following browser authority currently present in the upstream web frontend:
 
