@@ -45,6 +45,11 @@ replace_once(
     '#elif defined(ENABLE_VFS_FD)\n\treturn VFileOpenFD(path, flags);\n#elif defined(__EMSCRIPTEN__)\n\t(void) path;\n\t(void) flags;\n\treturn 0;\n#else\n#error "Can\'t build VFS subsystem without a VFile backend"',
 )
 replace_once(
+    root / 'src/util/vfs.c',
+    '#elif defined(HAVE_REALPATH)\n\tif (realpath(buf, out)) {',
+    '#elif defined(HAVE_REALPATH) && !defined(__EMSCRIPTEN__)\n\tif (realpath(buf, out)) {',
+)
+replace_once(
     root / 'src/core/config.c',
     'void mCoreConfigPortableIniPath(char* out, size_t outLength) {\n#ifdef _WIN32',
     'void mCoreConfigPortableIniPath(char* out, size_t outLength) {\n#ifdef __EMSCRIPTEN__\n\tUNUSED(outLength);\n\tout[0] = \'\\0\';\n#elif defined(_WIN32)',
@@ -53,14 +58,6 @@ replace_once(
     root / 'src/core/config.c',
     'void mCoreConfigDirectory(char* out, size_t outLength) {\n\tchar portableDir[PATH_MAX];',
     'void mCoreConfigDirectory(char* out, size_t outLength) {\n#ifdef __EMSCRIPTEN__\n\tUNUSED(outLength);\n\tout[0] = \'\\0\';\n\treturn;\n#endif\n\tchar portableDir[PATH_MAX];',
-)
-# Emscripten can retain the libc getcwd shim when this object is linked even
-# though the browser-only branch above is selected. The Wisp core never owns a
-# host working directory, so make the dormant fallback fail closed as well.
-replace_once(
-    root / 'src/core/config.c',
-    '\tgetcwd(out, outLength);',
-    "\tUNUSED(outLength);\n\tout[0] = '\\0';\n\treturn;",
 )
 PY
 rm -rf "${BUILD_DIR}"
