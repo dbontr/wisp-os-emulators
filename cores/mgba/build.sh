@@ -84,10 +84,11 @@ emcc \
     "${ROOT}/cores/mgba/wisp_core.c" "${LIB}" \
     --no-entry \
     -sSTANDALONE_WASM=1 \
+    -sFILESYSTEM=0 \
     -sINITIAL_MEMORY=134217728 \
     -sSTACK_SIZE=1048576 \
     -sMALLOC=emmalloc \
-    -Wl,--allow-undefined \
+    -Wl,--allow-undefined-file="${ROOT}/scripts/wisp-core-imports.txt" \
     "${LINK_EXPORTS[@]}" \
     -o "${OUT_DIR}/core.wasm"
 
