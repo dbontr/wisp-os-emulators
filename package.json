@@ -7,8 +7,9 @@
   "scripts": {
     "sign": "node scripts/sign-catalog.mjs",
     "sign:package": "node scripts/sign-package.mjs",
-    "verify": "npm run verify:catalog && npm run verify:sources",
+    "verify": "npm run verify:catalog && npm run verify:packages && npm run verify:sources",
     "verify:catalog": "node scripts/verify-catalog.mjs",
+    "verify:packages": "node scripts/verify-packages.mjs",
     "verify:sources": "node scripts/verify-core-sources.mjs"
   }
 }
