@@ -107,7 +107,9 @@ emcc \
     -Oz -std=gnu11 -D_GNU_SOURCE -DDISABLE_THREADING -DNDEBUG \
     -I"${SOURCE_DIR}/include" -I"${BUILD_DIR}/include" \
     "${CORE_DEFINES[@]}" \
-    "${ROOT}/cores/mgba/wisp_core.c" "${LIB}" \
+    "${ROOT}/cores/mgba/wisp_core.c" \
+    "${ROOT}/cores/mgba/vfs_stubs.c" \
+    "${LIB}" \
     --no-entry \
     -sSTANDALONE_WASM=1 \
     -sFILESYSTEM=0 \
