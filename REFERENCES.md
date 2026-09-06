@@ -2,7 +2,9 @@
 
 - [WebAssembly Core Specification](https://webassembly.github.io/spec/core/) — WebAssembly Community Group. Used for: executable module format, import/export inspection, and the Wisp emulator core ABI.
 - [WASI Preview 1](https://github.com/WebAssembly/WASI/blob/main/legacy/preview1/docs.md) — WebAssembly Community Group. Used for: the bounded reactor imports accepted by the ABI 1 host.
-- [Emscripten standalone WebAssembly](https://emscripten.org/docs/tools_reference/settings_reference.html#standalone-wasm) — Emscripten project. Used for: compiling C/C++ emulator libraries as reactor-style standalone WebAssembly.
+- [Emscripten standalone WebAssembly](https://emscripten.org/docs/tools_reference/settings_reference.html#standalone-wasm) — Emscripten project. Used for: compiling C/C++ emulator libraries as reactor-style standalone WebAssembly and setting bounded linear-memory parameters.
+- [Announcing Rust 1.98.1](https://blog.rust-lang.org/2026/09/03/Rust-1.98.1/) — Rust Release Team. Used for: the pinned compiler toolchain for jgenesis WebAssembly core builds.
+- [Node.js downloads](https://nodejs.org/en/download) — OpenJS Foundation. Used for: the pinned Node.js runtime used by emulator verification and smoke-test scripts.
 - [Gamepad specification](https://w3c.github.io/gamepad/) — W3C Web Applications Working Group. Used for: logical controller input owned by Games rather than console cores.
 - [Web Audio API](https://www.w3.org/TR/webaudio-1.1/) — W3C Web Audio Working Group. Used for: Games audio output from bounded PCM batches.
 - [mGBA](https://github.com/mgba-emu/mgba) — mGBA project, MPL-2.0. Used for: Game Boy, Game Boy Color, and Game Boy Advance emulation at the pinned package revision.

@@ -9,8 +9,8 @@ crate-type = ["cdylib"]
 path = "src/root.rs"
 
 [dependencies]
-bincode = "2"
-getrandom = "0.4"
+bincode = "=2.0.1"
+getrandom = "=0.4.3"
 genesis-config = { path = "../../.tmp/jgenesis-src/config/genesis-config" }
 genesis-core = { path = "../../.tmp/jgenesis-src/backend/genesis-core" }
 jgenesis-common = { path = "../../.tmp/jgenesis-src/common/jgenesis-common" }

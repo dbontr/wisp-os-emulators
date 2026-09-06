@@ -128,7 +128,8 @@ emcc \
     --no-entry \
     -sSTANDALONE_WASM=1 \
     -sFILESYSTEM=0 \
-    -sINITIAL_MEMORY=134217728 \
+    -sINITIAL_MEMORY=83886080 \
+    -sALLOW_MEMORY_GROWTH=0 \
     -sSTACK_SIZE=1048576 \
     -sMALLOC=dlmalloc \
     -Wl,--allow-undefined-file="${ROOT}/scripts/wisp-core-imports.txt" \

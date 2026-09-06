@@ -8,6 +8,8 @@ if (!wasmPath || !['gba', 'genesis', 'snes'].includes(profile)) {
   throw new Error('usage: node scripts/smoke-core.mjs <core.wasm> <gba|genesis|snes>')
 }
 
+const MIB = 1024 * 1024
+
 function writeAscii(bytes, offset, text, length = text.length) {
   for (let i = 0; i < length; i += 1) {
     bytes[offset + i] = i < text.length ? text.charCodeAt(i) & 0xff : 0x20
@@ -20,8 +22,8 @@ function makeGenesisRom() {
   const view = new DataView(rom.buffer)
   view.setUint32(0x0000, 0x00ff0000, false)
   view.setUint32(0x0004, 0x00000200, false)
-  rom[0x0200] = 0x60 // BRA.S
-  rom[0x0201] = 0xfe // branch to itself
+  rom[0x0200] = 0x60
+  rom[0x0201] = 0xfe
   writeAscii(rom, 0x0100, 'SEGA GENESIS    ', 16)
   writeAscii(rom, 0x0120, 'WISP SMOKE TEST', 48)
   writeAscii(rom, 0x0150, 'WISP SMOKE TEST', 48)
@@ -32,25 +34,24 @@ function makeGenesisRom() {
 
 function makeSnesRom() {
   const rom = new Uint8Array(32 * 1024)
-  rom.fill(0xea) // 65C816 NOP
-  rom[0x0000] = 0x80 // BRA
-  rom[0x0001] = 0xfe // branch to itself at $00:8000
+  rom.fill(0xea)
+  rom[0x0000] = 0x80
+  rom[0x0001] = 0xfe
 
   const header = 0x7fc0
   writeAscii(rom, header, 'WISP SMOKE TEST', 21)
-  rom[header + 0x15] = 0x20 // LoROM, slow ROM
-  rom[header + 0x16] = 0x00 // ROM only
-  rom[header + 0x17] = 0x05 // 32 KiB
-  rom[header + 0x18] = 0x00 // no SRAM
-  rom[header + 0x19] = 0x01 // NTSC
-  rom[header + 0x1a] = 0x33 // extended maker marker
-  rom[header + 0x1b] = 0x00 // version
-  rom[header + 0x1c] = 0xff // checksum complement
+  rom[header + 0x15] = 0x20
+  rom[header + 0x16] = 0x00
+  rom[header + 0x17] = 0x05
+  rom[header + 0x18] = 0x00
+  rom[header + 0x19] = 0x01
+  rom[header + 0x1a] = 0x33
+  rom[header + 0x1b] = 0x00
+  rom[header + 0x1c] = 0xff
   rom[header + 0x1d] = 0xff
-  rom[header + 0x1e] = 0x00 // checksum
+  rom[header + 0x1e] = 0x00
   rom[header + 0x1f] = 0x00
 
-  // Native + emulation reset/NMI/IRQ vectors point at $8000.
   for (const offset of [0x7fea, 0x7fec, 0x7fee, 0x7ffa, 0x7ffc, 0x7ffe]) {
     rom[offset] = 0x00
     rom[offset + 1] = 0x80
@@ -59,8 +60,7 @@ function makeSnesRom() {
 }
 
 function makeGbaRom() {
-  const rom = new Uint8Array(256 * 1024)
-  // ARM B . at 0x08000000. This also satisfies mGBA's first ROM magic byte at offset 3.
+  const rom = new Uint8Array(32 * MIB)
   rom[0x0000] = 0xfe
   rom[0x0001] = 0xff
   rom[0x0002] = 0xff
@@ -68,7 +68,7 @@ function makeGbaRom() {
   writeAscii(rom, 0x00a0, 'WISPSMOKE', 12)
   writeAscii(rom, 0x00ac, 'WSMK', 4)
   writeAscii(rom, 0x00b0, '01', 2)
-  rom[0x00b2] = 0x96 // mGBA's second GBA ROM magic byte
+  rom[0x00b2] = 0x96
   return rom
 }
 
@@ -220,6 +220,9 @@ for (const name of requiredFunctions) {
   if (typeof instanceExports[name] !== 'function') throw new Error(`missing core function ${name}`)
 }
 if (!(instanceExports.memory instanceof WebAssembly.Memory)) throw new Error('missing exported core memory')
+if (profile === 'gba' && memory().buffer.byteLength !== 80 * MIB) {
+  throw new Error(`mGBA memory is ${memory().buffer.byteLength} bytes; fixed 80 MiB ceiling required`)
+}
 if (typeof instanceExports._initialize === 'function') instanceExports._initialize()
 if (instanceExports.wisp_core_api_version() !== 1) throw new Error('core ABI version is not 1')
 if (instanceExports.wisp_core_init() !== 1) throw new Error('core init failed')
@@ -232,6 +235,9 @@ new Uint8Array(memory().buffer, romPtr, rom.byteLength).set(rom)
 const loaded = instanceExports.wisp_core_load_game(romPtr, rom.byteLength)
 instanceExports.wisp_core_free(romPtr)
 if (loaded !== 1) throw new Error(`${profile} synthetic ROM was rejected`)
+if (profile === 'gba' && memory().buffer.byteLength !== 80 * MIB) {
+  throw new Error(`mGBA memory changed to ${memory().buffer.byteLength} bytes; fixed 80 MiB ceiling required`)
+}
 
 instanceExports.wisp_core_run()
 if (frameCount < 1) throw new Error(`${profile} produced no video frame`)
@@ -250,7 +256,7 @@ if (
   typeof instanceExports.wisp_core_unserialize === 'function'
 ) {
   const stateBytes = instanceExports.wisp_core_state_size()
-  if (stateBytes > 0 && stateBytes <= 32 * 1024 * 1024) {
+  if (stateBytes > 0 && stateBytes <= 32 * MIB) {
     const statePtr = instanceExports.wisp_core_alloc(stateBytes)
     if (!statePtr) throw new Error(`failed to allocate ${stateBytes} state bytes`)
     const serialized = instanceExports.wisp_core_serialize(statePtr, stateBytes)
