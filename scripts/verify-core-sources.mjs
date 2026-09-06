@@ -4,6 +4,12 @@ import { resolve } from 'node:path'
 const root = resolve(import.meta.dirname, '..')
 const mgbaRevision = 'c034660f007c543233f1cadeb0ca13c71afd8f41'
 const jgenesisRevision = '0b26611fa23007f2632d32b7cdbdb6369b01eb91'
+const rustToolchain = '1.98.1'
+const nodeVersion = '24.20.0'
+const checkoutAction = 'actions/checkout@11d5960a326750d5838078e36cf38b85af677262'
+const setupNodeAction = 'actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020'
+const uploadArtifactAction = 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02'
+const emsdkImage = 'emscripten/emsdk@sha256:f8a157011b8fa61bdaab875bb1f0f08695229dffe086448d14b53538cae16bd3'
 
 const required = [
   'CORE_ABI.md',
@@ -22,6 +28,8 @@ const required = [
   'packages/jgenesis-snes/package.source.json',
   'scripts/check-core-wasm.mjs',
   'scripts/sign-package.mjs',
+  '.github/workflows/build-cores.yml',
+  '.github/workflows/verify.yml',
   'REFERENCES.md',
 ]
 for (const path of required) {
@@ -31,6 +39,11 @@ for (const path of required) {
 assertPinnedBuild('cores/mgba/build.sh', 'MGBA_REF', mgbaRevision, 'mGBA.license')
 assertPinnedBuild('cores/jgenesis-genesis/build.sh', 'JGENESIS_REF', jgenesisRevision, 'jgenesis.license')
 assertPinnedBuild('cores/jgenesis-snes/build.sh', 'JGENESIS_REF', jgenesisRevision, 'jgenesis.license')
+assertRustToolchain('cores/jgenesis-genesis/build.sh')
+assertRustToolchain('cores/jgenesis-snes/build.sh')
+assertMgbaMemoryPolicy('cores/mgba/build.sh')
+assertWorkflowPins('.github/workflows/build-cores.yml', true)
+assertWorkflowPins('.github/workflows/verify.yml', false)
 
 for (const path of [
   'cores/mgba/wisp_core.c',
@@ -70,7 +83,7 @@ for (const source of ['mgba-emu/mgba', 'jsgroth/jgenesis', 'WebAssembly/WASI']) 
   if (!references.includes(source)) throw new Error(`REFERENCES.md is missing ${source}`)
 }
 
-console.log('Verified pinned emulator source and package policy')
+console.log('Verified pinned emulator source, build environment, and package policy')
 
 function assertPinnedSource(path, variable, revision) {
   const source = readFileSync(resolve(root, path), 'utf8')
@@ -85,6 +98,48 @@ function assertPinnedBuild(path, variable, revision, licenseArtifact) {
   assertPinnedSource(path, variable, revision)
   const build = readFileSync(resolve(root, path), 'utf8')
   if (!build.includes(licenseArtifact)) throw new Error(`${path} must preserve ${licenseArtifact}`)
+}
+
+function assertRustToolchain(path) {
+  const build = readFileSync(resolve(root, path), 'utf8')
+  const required = [
+    `RUST_TOOLCHAIN="\${RUST_TOOLCHAIN:-${rustToolchain}}"`,
+    'rustup toolchain install "${RUST_TOOLCHAIN}" --profile minimal',
+    'rustup target add --toolchain "${RUST_TOOLCHAIN}" wasm32-unknown-unknown',
+    'rustup run "${RUST_TOOLCHAIN}" cargo build',
+  ]
+  for (const value of required) {
+    if (!build.includes(value)) throw new Error(`${path} must pin Rust ${rustToolchain} through rustup`)
+  }
+}
+
+function assertMgbaMemoryPolicy(path) {
+  const build = readFileSync(resolve(root, path), 'utf8')
+  for (const value of [
+    '-sINITIAL_MEMORY=67108864',
+    '-sALLOW_MEMORY_GROWTH=1',
+    '-sMAXIMUM_MEMORY=134217728',
+  ]) {
+    if (!build.includes(value)) throw new Error(`${path} is missing bounded mGBA memory policy: ${value}`)
+  }
+  if (build.includes('-sINITIAL_MEMORY=134217728')) {
+    throw new Error(`${path} must not reserve the complete 128 MiB mGBA ceiling at startup`)
+  }
+}
+
+function assertWorkflowPins(path, requiresArtifacts) {
+  const workflow = readFileSync(resolve(root, path), 'utf8')
+  for (const value of ['runs-on: ubuntu-24.04', checkoutAction, setupNodeAction, `node-version: '${nodeVersion}'`]) {
+    if (!workflow.includes(value)) throw new Error(`${path} is missing build-environment pin: ${value}`)
+  }
+  if (requiresArtifacts) {
+    if (!workflow.includes(uploadArtifactAction)) throw new Error(`${path} must pin the upload-artifact action`)
+    if (!workflow.includes(emsdkImage)) throw new Error(`${path} must pin the Emscripten image digest`)
+  }
+  if (/actions\/(?:checkout|setup-node|upload-artifact)@v\d+/.test(workflow)) {
+    throw new Error(`${path} contains a moving GitHub Action major-version ref`)
+  }
+  if (workflow.includes('ubuntu-latest')) throw new Error(`${path} contains a moving runner label`)
 }
 
 function assertPackage({ path, id, systems, licenseArtifact, repository, revision, license }) {
