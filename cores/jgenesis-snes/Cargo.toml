@@ -9,8 +9,8 @@ crate-type = ["cdylib"]
 path = "src/root.rs"
 
 [dependencies]
-bincode = "2"
-getrandom = "0.4"
+bincode = "=2.0.1"
+getrandom = "=0.4.3"
 jgenesis-common = { path = "../../.tmp/jgenesis-src/common/jgenesis-common" }
 snes-config = { path = "../../.tmp/jgenesis-src/config/snes-config" }
 snes-core = { path = "../../.tmp/jgenesis-src/backend/snes-core" }
