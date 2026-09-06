@@ -20,8 +20,10 @@ const required = [
   'cores/mgba/build.sh',
   'cores/jgenesis-common/prepare.sh',
   'cores/jgenesis-genesis/build.sh',
+  'cores/jgenesis-genesis/Cargo.toml',
   'cores/jgenesis-genesis/src/lib.rs',
   'cores/jgenesis-snes/build.sh',
+  'cores/jgenesis-snes/Cargo.toml',
   'cores/jgenesis-snes/src/lib.rs',
   'packages/mgba/package.source.json',
   'packages/jgenesis-genesis/package.source.json',
@@ -41,6 +43,8 @@ assertPinnedBuild('cores/jgenesis-genesis/build.sh', 'JGENESIS_REF', jgenesisRev
 assertPinnedBuild('cores/jgenesis-snes/build.sh', 'JGENESIS_REF', jgenesisRevision, 'jgenesis.license')
 assertRustToolchain('cores/jgenesis-genesis/build.sh')
 assertRustToolchain('cores/jgenesis-snes/build.sh')
+assertWrapperDependencies('cores/jgenesis-genesis/Cargo.toml')
+assertWrapperDependencies('cores/jgenesis-snes/Cargo.toml')
 assertMgbaMemoryPolicy('cores/mgba/build.sh')
 assertWorkflowPins('.github/workflows/build-cores.yml', true)
 assertWorkflowPins('.github/workflows/verify.yml', false)
@@ -113,17 +117,23 @@ function assertRustToolchain(path) {
   }
 }
 
+function assertWrapperDependencies(path) {
+  const manifest = readFileSync(resolve(root, path), 'utf8')
+  for (const dependency of ['bincode = "=2.0.1"', 'getrandom = "=0.4.3"']) {
+    if (!manifest.includes(dependency)) throw new Error(`${path} must pin reviewed wrapper dependency ${dependency}`)
+  }
+}
+
 function assertMgbaMemoryPolicy(path) {
   const build = readFileSync(resolve(root, path), 'utf8')
   for (const value of [
     '-sINITIAL_MEMORY=67108864',
-    '-sALLOW_MEMORY_GROWTH=1',
-    '-sMAXIMUM_MEMORY=134217728',
+    '-sALLOW_MEMORY_GROWTH=0',
   ]) {
-    if (!build.includes(value)) throw new Error(`${path} is missing bounded mGBA memory policy: ${value}`)
+    if (!build.includes(value)) throw new Error(`${path} is missing fixed mGBA memory policy: ${value}`)
   }
-  if (build.includes('-sINITIAL_MEMORY=134217728')) {
-    throw new Error(`${path} must not reserve the complete 128 MiB mGBA ceiling at startup`)
+  for (const prohibited of ['-sINITIAL_MEMORY=134217728', '-sALLOW_MEMORY_GROWTH=1', '-sMAXIMUM_MEMORY=']) {
+    if (build.includes(prohibited)) throw new Error(`${path} contains disallowed mGBA memory configuration: ${prohibited}`)
   }
 }
 
