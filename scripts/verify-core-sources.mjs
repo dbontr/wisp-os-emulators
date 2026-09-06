@@ -4,13 +4,12 @@ import { resolve } from 'node:path'
 const root = resolve(import.meta.dirname, '..')
 const mgbaRevision = 'c034660f007c543233f1cadeb0ca13c71afd8f41'
 const jgenesisRevision = '0b26611fa23007f2632d32b7cdbdb6369b01eb91'
-const geckoRevision = 'da39be17b22eb7316e772d2369da15df3a52f7f0'
 
 const required = [
   'CORE_ABI.md',
   'CORE_TARGETS.md',
-  'STREAMED_CORE_DESIGN.md',
-  'MODERN_CORE_PROBES.md',
+  'CORE_FAMILIES.md',
+  'CATALOG.md',
   'cores/mgba/wisp_core.c',
   'cores/mgba/build.sh',
   'cores/jgenesis-common/prepare.sh',
@@ -18,7 +17,6 @@ const required = [
   'cores/jgenesis-genesis/src/lib.rs',
   'cores/jgenesis-snes/build.sh',
   'cores/jgenesis-snes/src/lib.rs',
-  'probes/gecko-web/build.sh',
   'packages/mgba/package.source.json',
   'packages/jgenesis-genesis/package.source.json',
   'packages/jgenesis-snes/package.source.json',
@@ -27,13 +25,12 @@ const required = [
   'REFERENCES.md',
 ]
 for (const path of required) {
-  if (!existsSync(resolve(root, path))) throw new Error(`missing emulator source artifact: ${path}`)
+  if (!existsSync(resolve(root, path))) throw new Error(`Missing emulator source artifact: ${path}`)
 }
 
 assertPinnedBuild('cores/mgba/build.sh', 'MGBA_REF', mgbaRevision, 'mGBA.license')
 assertPinnedBuild('cores/jgenesis-genesis/build.sh', 'JGENESIS_REF', jgenesisRevision, 'jgenesis.license')
 assertPinnedBuild('cores/jgenesis-snes/build.sh', 'JGENESIS_REF', jgenesisRevision, 'jgenesis.license')
-assertPinnedSource('probes/gecko-web/build.sh', 'GECKO_REF', geckoRevision)
 
 for (const path of [
   'cores/mgba/wisp_core.c',
@@ -68,18 +65,12 @@ assertPackage({
   repository: 'https://github.com/jsgroth/jgenesis', revision: jgenesisRevision, license: 'GPL-3.0',
 })
 
-const modernProbes = readFileSync(resolve(root, 'MODERN_CORE_PROBES.md'), 'utf8')
-if (!modernProbes.includes(geckoRevision)) throw new Error('Gecko probe documentation must name the pinned revision')
-
 const references = readFileSync(resolve(root, 'REFERENCES.md'), 'utf8')
-for (const source of [
-  'mgba-emu/mgba', 'jsgroth/jgenesis', 'ioncodes/gecko', 'dolphin-emu/dolphin',
-  'cemu-project/Cemu', 'xenia-project/xenia', 'voland-emu/Voland',
-]) {
+for (const source of ['mgba-emu/mgba', 'jsgroth/jgenesis', 'WebAssembly/WASI']) {
   if (!references.includes(source)) throw new Error(`REFERENCES.md is missing ${source}`)
 }
 
-console.log('Verified emulator source policy and pinned core targets')
+console.log('Verified pinned emulator source and package policy')
 
 function assertPinnedSource(path, variable, revision) {
   const source = readFileSync(resolve(root, path), 'utf8')
@@ -107,7 +98,8 @@ function assertPackage({ path, id, systems, licenseArtifact, repository, revisio
   if (!source.artifactPaths.includes(licenseArtifact)) throw new Error(`${path} must include ${licenseArtifact}`)
   const upstream = source.metadata.source
   if (upstream?.repository !== repository || upstream?.revision !== revision || upstream?.license !== license
-    || upstream?.correspondingSource !== `${repository}/tree/${revision}`) {
+    || upstream?.correspondingSource !== `${repository}/tree/${revision}`
+    || !/^[0-9a-f]{40}$/.test(upstream.revision)) {
     throw new Error(`${path} must declare immutable upstream source and license metadata`)
   }
 }
