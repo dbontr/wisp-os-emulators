@@ -12,27 +12,13 @@ const uploadArtifactAction = 'actions/upload-artifact@ea165f8d65b6e75b540449e92b
 const emsdkImage = 'emscripten/emsdk@sha256:f8a157011b8fa61bdaab875bb1f0f08695229dffe086448d14b53538cae16bd3'
 
 const required = [
-  'CORE_ABI.md',
-  'CORE_TARGETS.md',
-  'CORE_FAMILIES.md',
-  'CATALOG.md',
-  'cores/mgba/wisp_core.c',
-  'cores/mgba/build.sh',
-  'cores/jgenesis-common/prepare.sh',
-  'cores/jgenesis-genesis/build.sh',
-  'cores/jgenesis-genesis/Cargo.toml',
-  'cores/jgenesis-genesis/src/lib.rs',
-  'cores/jgenesis-snes/build.sh',
-  'cores/jgenesis-snes/Cargo.toml',
-  'cores/jgenesis-snes/src/lib.rs',
-  'packages/mgba/package.source.json',
-  'packages/jgenesis-genesis/package.source.json',
-  'packages/jgenesis-snes/package.source.json',
-  'scripts/check-core-wasm.mjs',
-  'scripts/sign-package.mjs',
-  '.github/workflows/build-cores.yml',
-  '.github/workflows/verify.yml',
-  'REFERENCES.md',
+  'CORE_ABI.md', 'CORE_TARGETS.md', 'CORE_FAMILIES.md', 'CATALOG.md',
+  'cores/mgba/wisp_core.c', 'cores/mgba/build.sh', 'cores/jgenesis-common/prepare.sh',
+  'cores/jgenesis-genesis/build.sh', 'cores/jgenesis-genesis/Cargo.toml', 'cores/jgenesis-genesis/src/lib.rs',
+  'cores/jgenesis-snes/build.sh', 'cores/jgenesis-snes/Cargo.toml', 'cores/jgenesis-snes/src/lib.rs',
+  'packages/mgba/package.source.json', 'packages/jgenesis-genesis/package.source.json',
+  'packages/jgenesis-snes/package.source.json', 'scripts/check-core-wasm.mjs', 'scripts/sign-package.mjs',
+  '.github/workflows/build-cores.yml', '.github/workflows/verify.yml', 'REFERENCES.md',
 ]
 for (const path of required) {
   if (!existsSync(resolve(root, path))) throw new Error(`Missing emulator source artifact: ${path}`)
@@ -49,11 +35,7 @@ assertMgbaMemoryPolicy('cores/mgba/build.sh')
 assertWorkflowPins('.github/workflows/build-cores.yml', true)
 assertWorkflowPins('.github/workflows/verify.yml', false)
 
-for (const path of [
-  'cores/mgba/wisp_core.c',
-  'cores/jgenesis-genesis/src/lib.rs',
-  'cores/jgenesis-snes/src/lib.rs',
-]) {
+for (const path of ['cores/mgba/wisp_core.c', 'cores/jgenesis-genesis/src/lib.rs', 'cores/jgenesis-snes/src/lib.rs']) {
   const adapter = readFileSync(resolve(root, path), 'utf8')
   for (const symbol of [
     'wisp_core_api_version', 'wisp_core_init', 'wisp_core_load_game', 'wisp_core_run',
@@ -67,19 +49,19 @@ for (const path of [
 }
 
 assertPackage({
-  path: 'packages/mgba/package.source.json',
-  id: 'mgba', systems: ['gb', 'gbc', 'gba'], licenseArtifact: 'mGBA.license',
-  repository: 'https://github.com/mgba-emu/mgba', revision: mgbaRevision, license: 'MPL-2.0',
+  path: 'packages/mgba/package.source.json', id: 'mgba', systems: ['gb', 'gbc', 'gba'],
+  licenseArtifact: 'mGBA.license', repository: 'https://github.com/mgba-emu/mgba',
+  revision: mgbaRevision, license: 'MPL-2.0',
 })
 assertPackage({
-  path: 'packages/jgenesis-genesis/package.source.json',
-  id: 'jgenesis-genesis', systems: ['genesis'], licenseArtifact: 'jgenesis.license',
-  repository: 'https://github.com/jsgroth/jgenesis', revision: jgenesisRevision, license: 'GPL-3.0',
+  path: 'packages/jgenesis-genesis/package.source.json', id: 'jgenesis-genesis', systems: ['genesis'],
+  licenseArtifact: 'jgenesis.license', repository: 'https://github.com/jsgroth/jgenesis',
+  revision: jgenesisRevision, license: 'GPL-3.0',
 })
 assertPackage({
-  path: 'packages/jgenesis-snes/package.source.json',
-  id: 'jgenesis-snes', systems: ['snes'], licenseArtifact: 'jgenesis.license',
-  repository: 'https://github.com/jsgroth/jgenesis', revision: jgenesisRevision, license: 'GPL-3.0',
+  path: 'packages/jgenesis-snes/package.source.json', id: 'jgenesis-snes', systems: ['snes'],
+  licenseArtifact: 'jgenesis.license', repository: 'https://github.com/jsgroth/jgenesis',
+  revision: jgenesisRevision, license: 'GPL-3.0',
 })
 
 const references = readFileSync(resolve(root, 'REFERENCES.md'), 'utf8')
@@ -126,13 +108,10 @@ function assertWrapperDependencies(path) {
 
 function assertMgbaMemoryPolicy(path) {
   const build = readFileSync(resolve(root, path), 'utf8')
-  for (const value of [
-    '-sINITIAL_MEMORY=67108864',
-    '-sALLOW_MEMORY_GROWTH=0',
-  ]) {
+  for (const value of ['-sINITIAL_MEMORY=83886080', '-sALLOW_MEMORY_GROWTH=0']) {
     if (!build.includes(value)) throw new Error(`${path} is missing fixed mGBA memory policy: ${value}`)
   }
-  for (const prohibited of ['-sINITIAL_MEMORY=134217728', '-sALLOW_MEMORY_GROWTH=1', '-sMAXIMUM_MEMORY=']) {
+  for (const prohibited of ['-sINITIAL_MEMORY=67108864', '-sINITIAL_MEMORY=134217728', '-sALLOW_MEMORY_GROWTH=1', '-sMAXIMUM_MEMORY=']) {
     if (build.includes(prohibited)) throw new Error(`${path} contains disallowed mGBA memory configuration: ${prohibited}`)
   }
 }
