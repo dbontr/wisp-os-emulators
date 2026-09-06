@@ -19,11 +19,11 @@ No commercial or third-party test ROM is stored in this repository. Test cartrid
 - Each package includes its applicable upstream license and corresponding-source reference.
 - Game content, firmware, keys, BIOS files, and personal saves remain outside this repository.
 - Cores receive Wisp input, video, audio, and save callbacks rather than DOM, OneDrive, Microsoft Graph, or network authority.
-- mGBA starts with at most 64 MiB of WebAssembly linear memory and can grow only to a 128 MiB hard ceiling. Its smoke gate loads and executes a generated 32 MiB GBA cartridge before accepting the build.
+- mGBA uses a fixed 64 MiB WebAssembly linear-memory ceiling. Memory growth stays disabled so the core does not add an Emscripten `env` host import to ABI 1. Its smoke gate loads and executes a generated 32 MiB GBA cartridge before accepting the build.
 - The jgenesis wrappers use Rust 1.98.1 and exact direct registry dependency versions that match the reviewed upstream lock state.
 - Core CI uses fixed runner labels, immutable GitHub Action commits, an exact Node runtime, and a digest-pinned Emscripten container.
 - A new console enters the catalog only after its signed package executes legal test software through the WispOS integration boundary.
 
-The mGBA memory ceiling must be reconsidered only if a valid standard-size cartridge cannot pass the execution gate within 128 MiB. Any increase requires a measured failure case and a new bounded qualification target.
+The mGBA memory ceiling must be reconsidered only if a valid standard-size cartridge cannot pass the execution gate within 64 MiB. Any increase requires a measured failure case and a new fixed qualification target; memory growth must not silently expand the ABI host-import boundary.
 
 ABI 1 deliberately stops at fully buffered cartridge-style media. A system that needs large random-access media or a broader execution model requires a new ABI justified by a working implementation; it is not part of this catalog contract.
