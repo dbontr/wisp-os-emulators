@@ -1,31 +1,18 @@
 # Emulator catalog contract
 
-`catalog.json` is the stable WispOS Emulator Library index. It is canonical-JSON signed by the same WispOS trust root that authorizes System, apps, and UI packs.
+`catalog.json` is the signed WispOS Emulator Library index. GitHub transports the file; the WispOS ECDSA P-256 trust root authorizes its contents.
 
-Each catalog core contains `id`, `name`, `version`, `description`, `systems`, and an HTTPS GitHub `packageUrl`. The package URL points to a signed `package.json`; sibling artifact paths resolve relative to that URL.
+Each catalog entry contains `id`, `name`, `version`, `description`, `systems`, and `packageUrl`. Core IDs, system IDs, and file extensions are globally unique. `packageUrl` must use `raw.githubusercontent.com`, name a 40-character Git commit, and point to `packages/<id>/<version>/package.json`.
 
-A core package has the normal WispOS signed artifact table plus:
+Each signed emulator package contains:
 
-```json
-{
-  "format": 1,
-  "id": "example-core",
-  "name": "Example Core",
-  "version": "1.0.0",
-  "kind": "emulator",
-  "entrypoint": "core.wasm",
-  "artifacts": [],
-  "permissions": [],
-  "metadata": {
-    "type": "emulator-core",
-    "coreAbi": 1,
-    "systems": [
-      { "id": "gb", "name": "Game Boy", "extensions": ["gb"] },
-      { "id": "gbc", "name": "Game Boy Color", "extensions": ["gbc"] }
-    ]
-  },
-  "signature": {}
-}
-```
+- `kind: "emulator"`;
+- `metadata.type: "emulator-core"`;
+- `metadata.coreAbi: 1`;
+- one or more system IDs, display names, and file extensions;
+- immutable upstream repository, revision, license, and corresponding-source metadata;
+- a signed `.wasm` entrypoint;
+- a signed artifact table that includes the applicable upstream license;
+- no WispOS service permissions.
 
-Only `.wasm`, JSON/text documentation, Markdown, and license artifacts are accepted. Emulator packages cannot request WispOS service permissions.
+Only WebAssembly and bounded metadata, documentation, and license artifacts are valid in ABI 1 packages. A core is published only after legal synthetic test software executes through its signed WispOS package boundary.

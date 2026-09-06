@@ -157,7 +157,7 @@ function wasiFunction(name) {
         throw new Error(`core called wasi proc_exit(${code})`)
       }
     default:
-      return () => 0
+      throw new Error(`unsupported WASI import ${name}`)
   }
 }
 
@@ -220,6 +220,7 @@ for (const name of requiredFunctions) {
   if (typeof instanceExports[name] !== 'function') throw new Error(`missing core function ${name}`)
 }
 if (!(instanceExports.memory instanceof WebAssembly.Memory)) throw new Error('missing exported core memory')
+if (typeof instanceExports._initialize === 'function') instanceExports._initialize()
 if (instanceExports.wisp_core_api_version() !== 1) throw new Error('core ABI version is not 1')
 if (instanceExports.wisp_core_init() !== 1) throw new Error('core init failed')
 

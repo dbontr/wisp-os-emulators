@@ -1,18 +1,9 @@
 # Core family policy
 
-The Emulator Library defaults to one plugin per console. Multiple console IDs may share a plugin only when they form a coherent hardware line and the selected emulator implementation already ships them through the same compact runtime. Bundling is an implementation decision, not a way to hide unrelated systems behind one download.
+The Emulator Library defaults to one independently updateable plugin per console. A plugin can expose multiple system IDs only when the selected emulator implementation naturally represents one hardware family in the same compact runtime.
 
-## Natural family candidates
+The current mGBA package is the accepted family example: one core exposes Game Boy, Game Boy Color, and Game Boy Advance without duplicating the same emulator runtime. Mega Drive / Genesis and Super Nintendo / Super Famicom remain independent jgenesis packages.
 
-| Plugin family | System IDs | Reason to bundle |
-| --- | --- | --- |
-| Game Boy line | `gb`, `gbc`, `gba` | mGBA exposes all three through one `mCore` library; one stripped package avoids duplicating the same runtime. |
-| Sega 8-bit family | `sms`, `gg` | Game Gear is closely derived from Master System hardware. |
-| Neo Geo Pocket family | `ngp`, `ngpc` | Monochrome and Color models are one handheld family. |
-| WonderSwan family | `ws`, `wsc` | Monochrome and Color models are one handheld family. |
+A family package must declare its complete signed `systems` table. System IDs and file extensions are unique across the signed catalog so Games can select one core deterministically without a preference database or console-specific logic in WispOS.
 
-Everything else starts as an independent core unless the chosen implementation provides strong technical justification for a family package. Newer generations, add-on hardware, and unrelated consoles are never bundled merely because one upstream project emulates all of them.
-
-## Catalog identity
-
-The catalog lists a plugin once and exposes its exact signed `systems` set. Games selects a core by system ID and game-image extension. Users install, update, and remove the plugin family as one unit.
+Unrelated consoles are never combined only to reduce catalog entries.
