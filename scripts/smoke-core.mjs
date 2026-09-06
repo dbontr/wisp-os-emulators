@@ -8,6 +8,8 @@ if (!wasmPath || !['gba', 'genesis', 'snes'].includes(profile)) {
   throw new Error('usage: node scripts/smoke-core.mjs <core.wasm> <gba|genesis|snes>')
 }
 
+const MIB = 1024 * 1024
+
 function writeAscii(bytes, offset, text, length = text.length) {
   for (let i = 0; i < length; i += 1) {
     bytes[offset + i] = i < text.length ? text.charCodeAt(i) & 0xff : 0x20
@@ -59,7 +61,8 @@ function makeSnesRom() {
 }
 
 function makeGbaRom() {
-  const rom = new Uint8Array(256 * 1024)
+  // Exercise ABI 1 with the maximum standard GBA cartridge size so memory growth is qualified.
+  const rom = new Uint8Array(32 * MIB)
   // ARM B . at 0x08000000. This also satisfies mGBA's first ROM magic byte at offset 3.
   rom[0x0000] = 0xfe
   rom[0x0001] = 0xff
@@ -220,6 +223,9 @@ for (const name of requiredFunctions) {
   if (typeof instanceExports[name] !== 'function') throw new Error(`missing core function ${name}`)
 }
 if (!(instanceExports.memory instanceof WebAssembly.Memory)) throw new Error('missing exported core memory')
+if (profile === 'gba' && memory().buffer.byteLength > 64 * MIB) {
+  throw new Error(`mGBA starts with ${memory().buffer.byteLength} bytes; 64 MiB startup ceiling exceeded`)
+}
 if (typeof instanceExports._initialize === 'function') instanceExports._initialize()
 if (instanceExports.wisp_core_api_version() !== 1) throw new Error('core ABI version is not 1')
 if (instanceExports.wisp_core_init() !== 1) throw new Error('core init failed')
@@ -232,6 +238,9 @@ new Uint8Array(memory().buffer, romPtr, rom.byteLength).set(rom)
 const loaded = instanceExports.wisp_core_load_game(romPtr, rom.byteLength)
 instanceExports.wisp_core_free(romPtr)
 if (loaded !== 1) throw new Error(`${profile} synthetic ROM was rejected`)
+if (profile === 'gba' && memory().buffer.byteLength > 128 * MIB) {
+  throw new Error(`mGBA grew to ${memory().buffer.byteLength} bytes; 128 MiB hard ceiling exceeded`)
+}
 
 instanceExports.wisp_core_run()
 if (frameCount < 1) throw new Error(`${profile} produced no video frame`)
@@ -250,7 +259,7 @@ if (
   typeof instanceExports.wisp_core_unserialize === 'function'
 ) {
   const stateBytes = instanceExports.wisp_core_state_size()
-  if (stateBytes > 0 && stateBytes <= 32 * 1024 * 1024) {
+  if (stateBytes > 0 && stateBytes <= 32 * MIB) {
     const statePtr = instanceExports.wisp_core_alloc(stateBytes)
     if (!statePtr) throw new Error(`failed to allocate ${stateBytes} state bytes`)
     const serialized = instanceExports.wisp_core_serialize(statePtr, stateBytes)
