@@ -7,8 +7,9 @@ TARGET_DIR="${ROOT}/.tmp/jgenesis-genesis-target"
 OUT_DIR="${ROOT}/build/jgenesis-genesis"
 JGENESIS_REPO="${JGENESIS_REPO:-https://github.com/jsgroth/jgenesis.git}"
 JGENESIS_REF="${JGENESIS_REF:-0b26611fa23007f2632d32b7cdbdb6369b01eb91}"
+RUST_TOOLCHAIN="${RUST_TOOLCHAIN:-1.98.1}"
 
-for command in git cargo rustup python3; do
+for command in git rustup python3; do
     command -v "${command}" >/dev/null 2>&1 || { echo "missing build tool: ${command}" >&2; exit 1; }
 done
 
@@ -21,10 +22,11 @@ git -C "${SOURCE_DIR}" checkout --quiet --detach "${JGENESIS_REF}"
 git -C "${SOURCE_DIR}" reset --quiet --hard "${JGENESIS_REF}"
 bash "${ROOT}/cores/jgenesis-common/prepare.sh" "${SOURCE_DIR}"
 
-rustup target add wasm32-unknown-unknown >/dev/null
+rustup toolchain install "${RUST_TOOLCHAIN}" --profile minimal >/dev/null
+rustup target add --toolchain "${RUST_TOOLCHAIN}" wasm32-unknown-unknown >/dev/null
 rm -rf "${TARGET_DIR}"
 RUSTFLAGS='--cfg getrandom_backend="custom"' \
-CARGO_TARGET_DIR="${TARGET_DIR}" cargo build \
+CARGO_TARGET_DIR="${TARGET_DIR}" rustup run "${RUST_TOOLCHAIN}" cargo build \
     --manifest-path "${ROOT}/cores/jgenesis-genesis/Cargo.toml" \
     --target wasm32-unknown-unknown \
     --release
