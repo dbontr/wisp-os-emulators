@@ -220,8 +220,8 @@ for (const name of requiredFunctions) {
   if (typeof instanceExports[name] !== 'function') throw new Error(`missing core function ${name}`)
 }
 if (!(instanceExports.memory instanceof WebAssembly.Memory)) throw new Error('missing exported core memory')
-if (profile === 'gba' && memory().buffer.byteLength !== 64 * MIB) {
-  throw new Error(`mGBA memory is ${memory().buffer.byteLength} bytes; fixed 64 MiB ceiling required`)
+if (profile === 'gba' && memory().buffer.byteLength !== 80 * MIB) {
+  throw new Error(`mGBA memory is ${memory().buffer.byteLength} bytes; fixed 80 MiB ceiling required`)
 }
 if (typeof instanceExports._initialize === 'function') instanceExports._initialize()
 if (instanceExports.wisp_core_api_version() !== 1) throw new Error('core ABI version is not 1')
@@ -235,8 +235,8 @@ new Uint8Array(memory().buffer, romPtr, rom.byteLength).set(rom)
 const loaded = instanceExports.wisp_core_load_game(romPtr, rom.byteLength)
 instanceExports.wisp_core_free(romPtr)
 if (loaded !== 1) throw new Error(`${profile} synthetic ROM was rejected`)
-if (profile === 'gba' && memory().buffer.byteLength !== 64 * MIB) {
-  throw new Error(`mGBA memory changed to ${memory().buffer.byteLength} bytes; fixed 64 MiB ceiling required`)
+if (profile === 'gba' && memory().buffer.byteLength !== 80 * MIB) {
+  throw new Error(`mGBA memory changed to ${memory().buffer.byteLength} bytes; fixed 80 MiB ceiling required`)
 }
 
 instanceExports.wisp_core_run()
